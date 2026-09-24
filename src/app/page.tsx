@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { buttonVariants } from "@/components/ui/button";
 import { createClient, isSupabaseAuthConfigured } from "@/lib/supabase/server";
+import { Hero } from "@/components/landing/hero";
+import { Statement } from "@/components/landing/statement";
 
 export default async function Home() {
   if (isSupabaseAuthConfigured()) {
@@ -13,23 +13,18 @@ export default async function Home() {
   }
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center font-mono">
-      <div>
-        <h1 className="text-4xl font-bold tracking-wide">NØVA</h1>
-        <p className="mt-2 text-sm text-zinc-500">Autonomous AI Optimization Agent — Think Less. Do More.</p>
-      </div>
-      <p className="max-w-md text-sm text-zinc-400">
-        NØVA decides the minimum sufficient intelligence for every request — deterministic tools,
-        a lightweight model, or a full reasoning model — while enforcing a privacy policy on what leaves the process.
-      </p>
-      <div className="flex gap-3">
-        <Link href="/login" className={buttonVariants()}>
-          Sign in
-        </Link>
-        <Link href="/dashboard" className={buttonVariants({ variant: "outline" })}>
-          Try the dashboard
-        </Link>
-      </div>
+    <main className="flex-1 font-mono">
+      <Hero />
+      <Statement eyebrow="01 — The problem">
+        Not every request needs a language model.
+      </Statement>
+      <Statement eyebrow="02 — The router">
+        NØVA scores every deterministic tool and AI provider on capability, accuracy,
+        privacy, latency and reliability — then routes to whichever actually wins.
+      </Statement>
+      <Statement eyebrow="03 — The guardrail">
+        Privacy is a hard constraint, never just a score.
+      </Statement>
     </main>
   );
 }

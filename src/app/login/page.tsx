@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useId, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { Reveal } from "@/components/motion/reveal";
 
 export default function LoginPage() {
   return (
@@ -26,6 +27,8 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const emailId = useId();
+  const passwordId = useId();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,6 +37,11 @@ function LoginForm() {
     setMessage(null);
 
     const supabase = createClient();
+    if (!supabase) {
+      setError("Supabase Auth is not configured in this deployment.");
+      setLoading(false);
+      return;
+    }
 
     if (mode === "sign-in") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -60,46 +68,62 @@ function LoginForm() {
 
   return (
     <main className="flex flex-1 items-center justify-center px-4 font-mono">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>{mode === "sign-in" ? "Sign in to NØVA" : "Create an account"}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <Input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              minLength={6}
-              required
-            />
-            {error && <p className="text-sm text-red-400">{error}</p>}
-            {message && <p className="text-sm text-emerald-400">{message}</p>}
-            <Button type="submit" disabled={loading}>
-              {loading ? "Working…" : mode === "sign-in" ? "Sign in" : "Sign up"}
-            </Button>
-            <button
-              type="button"
-              className="text-xs text-zinc-500 hover:text-zinc-300"
-              onClick={() => {
-                setMode(mode === "sign-in" ? "sign-up" : "sign-in");
-                setError(null);
-                setMessage(null);
-              }}
-            >
-              {mode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in"}
-            </button>
-          </form>
-        </CardContent>
-      </Card>
+      <Reveal className="w-full max-w-sm">
+        <Card className="glass border-0">
+          <CardHeader>
+            <CardTitle>{mode === "sign-in" ? "Sign in to NØVA" : "Create an account"}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor={emailId} className="text-xs text-zinc-400">
+                  Email
+                </label>
+                <Input
+                  id={emailId}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor={passwordId} className="text-xs text-zinc-400">
+                  Password
+                </label>
+                <Input
+                  id={passwordId}
+                  type="password"
+                  autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={6}
+                  required
+                />
+              </div>
+              {error && <p className="text-sm text-red-400">{error}</p>}
+              {message && <p className="text-sm text-emerald-400">{message}</p>}
+              <Button type="submit" disabled={loading} className="mt-1">
+                {loading ? "Working…" : mode === "sign-in" ? "Sign in" : "Sign up"}
+              </Button>
+              <button
+                type="button"
+                className="text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+                onClick={() => {
+                  setMode(mode === "sign-in" ? "sign-up" : "sign-in");
+                  setError(null);
+                  setMessage(null);
+                }}
+              >
+                {mode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in"}
+              </button>
+            </form>
+          </CardContent>
+        </Card>
+      </Reveal>
     </main>
   );
 }
