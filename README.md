@@ -25,7 +25,9 @@ USER → SCOUT → GUARDIAN → THINKER → ROUTER → EXECUTE → VERIFY → RE
   privacy constraint.
 - **Executor** — runs it: a hand-written arithmetic evaluator, a regex
   extractor, or a call to NVIDIA NIM / DeepSeek.
-- **Verifier** — sanity-checks the output before it's returned.
+- **Verifier** — sanity-checks the output before it's returned. If an AI
+  response fails verification, the pipeline escalates once to a stronger
+  model on the same provider before giving up.
 
 Every request returns a full execution trace explaining why that path was
 chosen.
@@ -62,6 +64,20 @@ Open [http://localhost:3000](http://localhost:3000). Try:
   full pipeline and returns the routing decision, output, verification
   result and trace.
 - `GET /api/providers` — configured/health status of each AI provider.
+- `GET /api/executions` / `GET /api/executions/:id` — persisted execution
+  history (requires Supabase to be configured; `503` otherwise).
+- `GET /api/metrics` — aggregate efficiency metrics over the last 500
+  persisted executions (requires Supabase).
+
+## Benchmark
+
+`npm run benchmark` runs the task dataset in `benchmarks/datasets/tasks.json`
+through the real pipeline and compares it against a "conventional AI app"
+baseline that sends every request straight to an LLM with no classification
+or privacy screening — the architecture NØVA replaces. It prints a summary
+and writes a full report to `benchmarks/reports/latest.json`. This measures
+*routing decisions* (what NØVA avoided sending to a model, and why), not
+model output quality — that comparison needs live provider keys.
 
 ## Project structure
 
@@ -73,10 +89,13 @@ lib/nova/
   thinker.ts          task profile scoring
   router.ts           execution-path selection
   verifier.ts          output verification
-  pipeline.ts          orchestrates the full agent loop
+  pipeline.ts          orchestrates the full agent loop, incl. escalation
+  persistence.ts        writes each run to Supabase (best-effort)
   executors/           deterministic (Level 0) execution
   providers/            provider-agnostic AI interface + NVIDIA/DeepSeek adapters
+lib/supabase/server.ts  service-role Supabase client
 supabase/migrations/   Postgres schema
+benchmarks/            adaptive-routing vs. always-AI baseline comparison
 ```
 
 ## Notes on provider claims

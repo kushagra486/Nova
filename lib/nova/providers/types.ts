@@ -30,6 +30,8 @@ export interface AIProvider {
   isConfigured(): boolean;
   models(): ModelInfo[];
   defaultModel(taskType: string): string;
+  /** A strictly stronger model than defaultModel() for the same task, used on verification failure. */
+  escalatedModel(taskType: string): string;
   healthCheck(): Promise<boolean>;
   estimate(request: AIRequest): UsageEstimate;
   generate(request: AIRequest): Promise<AIResponse>;

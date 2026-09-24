@@ -33,6 +33,11 @@ export const nvidiaProvider: AIProvider = {
     return "zai-org/glm-5-3-flash";
   },
 
+  escalatedModel(taskType: string) {
+    if (taskType === "coding" || taskType === "reasoning") return "nvidia/nemotron-3-ultra";
+    return "zai-org/glm-5-3";
+  },
+
   async healthCheck() {
     if (!this.isConfigured()) return false;
     try {

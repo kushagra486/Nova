@@ -1,0 +1,332 @@
+{
+  "generatedAt": "2026-09-24T13:42:02.363Z",
+  "sampleSize": 20,
+  "hypothesis": "H1: adaptive routing reduces unnecessary AI execution while maintaining task quality (section 43).",
+  "notes": "AI call counts reflect what NØVA's Router *decided* to send to a model, not model output quality. Accuracy/quality comparison requires live NVIDIA_API_KEY / DEEPSEEK_API_KEY and is not measured here.",
+  "summary": {
+    "totalTasks": 20,
+    "baselineAiCalls": 20,
+    "novaRoutedToAiCalls": 13,
+    "novaAiCallsSucceeded": 0,
+    "aiCallsAvoidedPct": 35,
+    "deterministicTasks": 5,
+    "blockedTasks": 2,
+    "tokensBaselineWouldSpend": 10570,
+    "tokensNovaAvoided": 3680,
+    "tokensSavedPct": 35
+  },
+  "byCategory": {
+    "arithmetic": {
+      "total": 3,
+      "deterministic": 3,
+      "blocked": 0,
+      "routedToAi": 0,
+      "aiCallsSucceeded": 0
+    },
+    "extraction": {
+      "total": 2,
+      "deterministic": 2,
+      "blocked": 0,
+      "routedToAi": 0,
+      "aiCallsSucceeded": 0
+    },
+    "classification": {
+      "total": 2,
+      "deterministic": 0,
+      "blocked": 0,
+      "routedToAi": 2,
+      "aiCallsSucceeded": 0
+    },
+    "summarization": {
+      "total": 2,
+      "deterministic": 0,
+      "blocked": 0,
+      "routedToAi": 2,
+      "aiCallsSucceeded": 0
+    },
+    "coding": {
+      "total": 2,
+      "deterministic": 0,
+      "blocked": 0,
+      "routedToAi": 2,
+      "aiCallsSucceeded": 0
+    },
+    "reasoning": {
+      "total": 2,
+      "deterministic": 0,
+      "blocked": 0,
+      "routedToAi": 2,
+      "aiCallsSucceeded": 0
+    },
+    "research_analysis": {
+      "total": 1,
+      "deterministic": 0,
+      "blocked": 0,
+      "routedToAi": 1,
+      "aiCallsSucceeded": 0
+    },
+    "document_analysis": {
+      "total": 1,
+      "deterministic": 0,
+      "blocked": 0,
+      "routedToAi": 1,
+      "aiCallsSucceeded": 0
+    },
+    "privacy_sensitive": {
+      "total": 3,
+      "deterministic": 0,
+      "blocked": 2,
+      "routedToAi": 1,
+      "aiCallsSucceeded": 0
+    },
+    "general_query": {
+      "total": 2,
+      "deterministic": 0,
+      "blocked": 0,
+      "routedToAi": 2,
+      "aiCallsSucceeded": 0
+    }
+  },
+  "results": [
+    {
+      "id": "calc-1",
+      "category": "arithmetic",
+      "novaExecutor": "deterministic",
+      "novaExecutorName": "calculator",
+      "novaPrivacyClass": "P0",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 515,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "calc-2",
+      "category": "arithmetic",
+      "novaExecutor": "deterministic",
+      "novaExecutorName": "calculator",
+      "novaPrivacyClass": "P0",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 516,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "calc-3",
+      "category": "arithmetic",
+      "novaExecutor": "deterministic",
+      "novaExecutorName": "calculator",
+      "novaPrivacyClass": "P0",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 514,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "extract-1",
+      "category": "extraction",
+      "novaExecutor": "deterministic",
+      "novaExecutorName": "regex_extractor",
+      "novaPrivacyClass": "P1",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 534,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "extract-2",
+      "category": "extraction",
+      "novaExecutor": "deterministic",
+      "novaExecutorName": "regex_extractor",
+      "novaPrivacyClass": "P1",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 531,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "classify-1",
+      "category": "classification",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 536,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "classify-2",
+      "category": "classification",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 533,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "summarize-1",
+      "category": "summarization",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 527,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "summarize-2",
+      "category": "summarization",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 522,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "coding-1",
+      "category": "coding",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 526,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "coding-2",
+      "category": "coding",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 530,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "reasoning-1",
+      "category": "reasoning",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 530,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "reasoning-2",
+      "category": "reasoning",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 532,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "reasoning-3",
+      "category": "research_analysis",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 532,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "document-1",
+      "category": "document_analysis",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 529,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "privacy-1",
+      "category": "privacy_sensitive",
+      "novaExecutor": "blocked",
+      "novaExecutorName": "guardian_block",
+      "novaPrivacyClass": "P3",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 535,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "privacy-2",
+      "category": "privacy_sensitive",
+      "novaExecutor": "blocked",
+      "novaExecutorName": "guardian_block",
+      "novaPrivacyClass": "P3",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 535,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "privacy-3",
+      "category": "privacy_sensitive",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P1",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 535,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "general-1",
+      "category": "general_query",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 530,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "general-2",
+      "category": "general_query",
+      "novaExecutor": "ai",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": true,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 528,
+      "novaTokensUsed": 0
+    }
+  ]
+}

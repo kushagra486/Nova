@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { getSupabaseServiceClient } from "@/lib/supabase/server";
+import { getSupabaseServiceClient } from "../supabase/server";
 import type {
   TaskRequest,
   ScoutResult,

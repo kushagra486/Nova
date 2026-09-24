@@ -43,6 +43,9 @@ export async function runNovaPipeline(request: TaskRequest): Promise<NovaRespons
   let tokensInput = 0;
   let tokensOutput = 0;
   let success = true;
+  let aiCallsUsed = 0;
+  let usedProvider = routing.provider;
+  let usedModel = routing.model;
 
   if (routing.executor === "blocked") {
     output = "This request was blocked by Guardian: it contains credentials or API keys that must not be sent to an external AI provider.";
@@ -72,6 +75,9 @@ export async function runNovaPipeline(request: TaskRequest): Promise<NovaRespons
         output = response.text;
         tokensInput = response.tokensInput;
         tokensOutput = response.tokensOutput;
+        aiCallsUsed += 1;
+        usedProvider = candidate.id;
+        usedModel = model;
         mark("execution", `${candidate.name}/${model} -> ${tokensOutput} tokens generated`);
         lastError = null;
         break;
@@ -90,21 +96,45 @@ export async function runNovaPipeline(request: TaskRequest): Promise<NovaRespons
     success = false;
   }
 
-  const verification = runVerifier(output, routing.executor === "deterministic");
+  let verification = runVerifier(output, routing.executor === "deterministic");
   mark("verification", `passed=${verification.passed} confidence=${verification.confidence}`);
 
-  if (!verification.passed && routing.executor === "ai") {
-    mark("escalation", "Verification failed; no stronger model configured to escalate to in this deployment.");
+  if (!verification.passed && routing.executor === "ai" && success && usedProvider) {
+    const provider = getProvider(usedProvider)!;
+    const strongerModel = provider.escalatedModel(scout.taskType);
+
+    if (strongerModel !== usedModel) {
+      try {
+        const response = await provider.generate({ prompt: guardian.redactedText, model: strongerModel });
+        aiCallsUsed += 1;
+        const escalatedVerification = runVerifier(response.text, false);
+        mark(
+          "escalation",
+          `${provider.name}/${strongerModel} -> passed=${escalatedVerification.passed} confidence=${escalatedVerification.confidence}`
+        );
+
+        output = response.text;
+        tokensInput += response.tokensInput;
+        tokensOutput += response.tokensOutput;
+        usedModel = strongerModel;
+        verification = escalatedVerification;
+      } catch (err) {
+        mark("escalation", `${provider.name}/${strongerModel} failed: ${(err as Error).message}`);
+      }
+    } else {
+      mark("escalation", `No stronger model available on ${provider.name} for this task type.`);
+    }
   }
 
   const latencyMs = Date.now() - started;
+  const finalRouting = { ...routing, provider: usedProvider, model: usedModel };
 
   const taskId = await persistPipelineRun({
     request,
     scout,
     guardian,
     thinker,
-    routing,
+    routing: finalRouting,
     verification,
     outcome: { tokensInput, tokensOutput, latencyMs, success },
   });
@@ -119,13 +149,13 @@ export async function runNovaPipeline(request: TaskRequest): Promise<NovaRespons
     privacyClass: guardian.privacyClass,
     selectedExecutor: routing.executor,
     executorName: routing.executorName,
-    provider: routing.provider,
-    model: routing.model,
+    provider: usedProvider,
+    model: usedModel,
     reason: routing.reason,
     output,
     verified: verification.passed && success,
     verification,
-    aiCallsUsed: routing.executor === "ai" ? 1 : 0,
+    aiCallsUsed,
     tokensUsed: tokensInput + tokensOutput,
     latencyMs,
     trace,

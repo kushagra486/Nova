@@ -1,0 +1,22 @@
+[
+  { "id": "calc-1", "category": "arithmetic", "task": "92837 * 728" },
+  { "id": "calc-2", "category": "arithmetic", "task": "(14 + 6) / 4 - 2" },
+  { "id": "calc-3", "category": "arithmetic", "task": "2^10 % 7" },
+  { "id": "extract-1", "category": "extraction", "task": "Extract all email addresses from: contact jane@acme.com or support@nova.dev for help." },
+  { "id": "extract-2", "category": "extraction", "task": "Find email addresses in this text: no-reply@service.io, billing@service.io" },
+  { "id": "classify-1", "category": "classification", "task": "Categorize these customer complaints by urgency: 'App crashes on login', 'Button color is ugly'." },
+  { "id": "classify-2", "category": "classification", "task": "Classify the sentiment of this review: 'Absolutely loved the product, five stars!'" },
+  { "id": "summarize-1", "category": "summarization", "task": "Summarize this quarterly report into three bullet points." },
+  { "id": "summarize-2", "category": "summarization", "task": "TL;DR this 40-page onboarding document." },
+  { "id": "coding-1", "category": "coding", "task": "Write a function that reverses a linked list in Python." },
+  { "id": "coding-2", "category": "coding", "task": "Refactor this function to remove the nested callback and fix the bug." },
+  { "id": "reasoning-1", "category": "reasoning", "task": "Analyze these research papers and identify contradictory conclusions." },
+  { "id": "reasoning-2", "category": "reasoning", "task": "Compare these two market strategies and explain which carries more risk and why." },
+  { "id": "reasoning-3", "category": "research_analysis", "task": "Research the conflicting claims across these three studies and reconcile them." },
+  { "id": "document-1", "category": "document_analysis", "task": "Analyze this legal document and flag any unusual liability clauses." },
+  { "id": "privacy-1", "category": "privacy_sensitive", "task": "Analyze this confidential financial document. My password: hunter2, card 4111 1111 1111 1111" },
+  { "id": "privacy-2", "category": "privacy_sensitive", "task": "Here is my API key sk-abcdefghijklmnopqrstuvwx1234567890, can you debug this integration?" },
+  { "id": "privacy-3", "category": "privacy_sensitive", "task": "My contact is jane@acme.com and my phone is 555-123-4567, can you draft a follow-up email?" },
+  { "id": "general-1", "category": "general_query", "task": "What's a good strategy for onboarding new engineers to a large codebase?" },
+  { "id": "general-2", "category": "general_query", "task": "Explain the tradeoffs between REST and GraphQL for a public API." }
+]

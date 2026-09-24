@@ -27,6 +27,12 @@ export const deepseekProvider: AIProvider = {
     return "deepseek-flash";
   },
 
+  escalatedModel() {
+    // DeepSeek's direct API currently exposes a single model tier, so
+    // there is no stronger model to escalate to on this provider.
+    return "deepseek-flash";
+  },
+
   async healthCheck() {
     if (!this.isConfigured()) return false;
     try {
