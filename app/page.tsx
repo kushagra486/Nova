@@ -1,7 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { NovaResponse } from "@/lib/nova/types";
+
+interface AggregateMetrics {
+  sampleSize: number;
+  aiCallsAvoidedPct: number;
+  deterministicPct: number;
+  successRatePct: number;
+  tokensUsed: number;
+  avgLatencyMs: number;
+}
 
 const EXAMPLES = [
   "92837 * 728",
@@ -28,6 +37,23 @@ export default function Home() {
     deterministicTasks: 0,
     tokensUsed: 0,
   });
+  const [aggregate, setAggregate] = useState<AggregateMetrics | null>(null);
+  const [aggregateVersion, setAggregateVersion] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/metrics")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setAggregate(data);
+      })
+      .catch(() => {
+        // Best-effort; the dashboard works fine on session stats alone.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [aggregateVersion]);
 
   async function execute() {
     if (!task.trim() || loading) return;
@@ -51,6 +77,7 @@ export default function Home() {
         deterministicTasks: s.deterministicTasks + (data.selectedExecutor === "deterministic" ? 1 : 0),
         tokensUsed: s.tokensUsed + data.tokensUsed,
       }));
+      if (data.taskId) setAggregateVersion((v) => v + 1);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -177,6 +204,32 @@ export default function Home() {
           </div>
         </dl>
       </section>
+
+      {aggregate && (
+        <section className="border border-zinc-800 rounded-lg p-4">
+          <h2 className="mb-3 text-xs uppercase tracking-widest text-zinc-500">
+            Computation Efficiency (all-time, last {aggregate.sampleSize} tasks — persisted in Supabase)
+          </h2>
+          <dl className="grid grid-cols-4 gap-4 text-center text-sm">
+            <div>
+              <dd className="text-2xl font-bold text-emerald-400">{aggregate.aiCallsAvoidedPct}%</dd>
+              <dt className="text-xs text-zinc-500">AI Calls Avoided</dt>
+            </div>
+            <div>
+              <dd className="text-2xl font-bold">{aggregate.deterministicPct}%</dd>
+              <dt className="text-xs text-zinc-500">Deterministic Tasks</dt>
+            </div>
+            <div>
+              <dd className="text-2xl font-bold">{aggregate.successRatePct}%</dd>
+              <dt className="text-xs text-zinc-500">Success Rate</dt>
+            </div>
+            <div>
+              <dd className="text-2xl font-bold">{aggregate.avgLatencyMs}ms</dd>
+              <dt className="text-xs text-zinc-500">Avg Latency</dt>
+            </div>
+          </dl>
+        </section>
+      )}
     </main>
   );
 }

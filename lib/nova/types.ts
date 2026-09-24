@@ -80,6 +80,7 @@ export interface TraceStep {
 }
 
 export interface NovaResponse {
+  taskId: string | null;
   taskType: string;
   complexity: number;
   privacy: number;

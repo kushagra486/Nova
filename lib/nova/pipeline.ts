@@ -6,6 +6,7 @@ import { runRouter } from "./router";
 import { runVerifier } from "./verifier";
 import { evaluateArithmetic, extractEmails } from "./executors/deterministic";
 import { getProvider, providers } from "./providers/registry";
+import { persistPipelineRun } from "./persistence";
 
 /**
  * The full NØVA agent loop: OBSERVE -> UNDERSTAND -> PLAN -> SELECT ->
@@ -97,9 +98,21 @@ export async function runNovaPipeline(request: TaskRequest): Promise<NovaRespons
   }
 
   const latencyMs = Date.now() - started;
+
+  const taskId = await persistPipelineRun({
+    request,
+    scout,
+    guardian,
+    thinker,
+    routing,
+    verification,
+    outcome: { tokensInput, tokensOutput, latencyMs, success },
+  });
+  mark("persisted", taskId ? `task_id=${taskId}` : "skipped (Supabase not configured)");
   mark("respond", `total_latency_ms=${latencyMs}`);
 
   return {
+    taskId,
     taskType: scout.taskType,
     complexity: scout.estimatedComplexity,
     privacy: thinker.privacySensitivity,
