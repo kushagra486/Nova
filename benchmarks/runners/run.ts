@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { runNovaPipeline } from "../../lib/nova/pipeline";
+import { novaOrchestrator } from "../../src/lib/nova/orchestrator";
 import tasks from "../datasets/tasks.json";
 
 /**
@@ -42,7 +42,7 @@ async function main() {
   const results: TaskResult[] = [];
 
   for (const item of dataset) {
-    const response = await runNovaPipeline({ task: item.task });
+    const response = await novaOrchestrator({ task: item.task });
     results.push({
       id: item.id,
       category: item.category,
