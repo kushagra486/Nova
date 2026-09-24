@@ -6,6 +6,7 @@ import { runRouter } from "./router";
 import { runVerifier } from "./verifier";
 import { evaluateArithmetic, extractEmails } from "./executors/deterministic";
 import { getProvider, providers } from "./providers/registry";
+import { recordOutcome } from "./providers/health-tracker";
 import { persistPipelineRun } from "./persistence";
 
 /**
@@ -78,11 +79,13 @@ export async function runNovaPipeline(request: TaskRequest): Promise<NovaRespons
         aiCallsUsed += 1;
         usedProvider = candidate.id;
         usedModel = model;
+        recordOutcome(candidate.id, true);
         mark("execution", `${candidate.name}/${model} -> ${tokensOutput} tokens generated`);
         lastError = null;
         break;
       } catch (err) {
         lastError = err as Error;
+        recordOutcome(candidate.id, false);
         mark("provider_failure", `${candidate.name} failed: ${lastError.message}`);
       }
     }
@@ -107,6 +110,7 @@ export async function runNovaPipeline(request: TaskRequest): Promise<NovaRespons
       try {
         const response = await provider.generate({ prompt: guardian.redactedText, model: strongerModel });
         aiCallsUsed += 1;
+        recordOutcome(provider.id, true);
         const escalatedVerification = runVerifier(response.text, false);
         mark(
           "escalation",
@@ -119,6 +123,7 @@ export async function runNovaPipeline(request: TaskRequest): Promise<NovaRespons
         usedModel = strongerModel;
         verification = escalatedVerification;
       } catch (err) {
+        recordOutcome(provider.id, false);
         mark("escalation", `${provider.name}/${strongerModel} failed: ${(err as Error).message}`);
       }
     } else {

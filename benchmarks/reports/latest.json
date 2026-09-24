@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-24T13:42:02.363Z",
+  "generatedAt": "2026-09-24T14:01:38.421Z",
   "sampleSize": 20,
   "hypothesis": "H1: adaptive routing reduces unnecessary AI execution while maintaining task quality (section 43).",
   "notes": "AI call counts reflect what NØVA's Router *decided* to send to a model, not model output quality. Accuracy/quality comparison requires live NVIDIA_API_KEY / DEEPSEEK_API_KEY and is not measured here.",

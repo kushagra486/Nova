@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { providers } from "@/lib/nova/providers/registry";
+import { getReliability } from "@/lib/nova/providers/health-tracker";
 import type { ProviderHealth } from "@/lib/nova/types";
 
 export async function GET() {
@@ -14,6 +15,7 @@ export async function GET() {
         online,
         configured,
         latencyMs: configured ? Date.now() - start : null,
+        reliability: getReliability(p.id),
       };
     })
   );

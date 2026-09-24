@@ -1,10 +1,13 @@
 import type { ScoutResult, ThinkerProfile, GuardianResult, RoutingDecision } from "./types";
 import { providers } from "./providers/registry";
+import { scoreProviderModel, formatScoreBreakdown } from "./scoring";
 
 /**
  * Router selects the minimum sufficient execution path: deterministic tools
- * first, then the cheapest AI provider/model capable of the task, subject to
- * Guardian's privacy constraint (a hard constraint, never just a score).
+ * first, then the AI provider/model with the highest NØVA score (capability,
+ * accuracy, privacy, latency and reliability fit, minus token cost and
+ * failure risk — see scoring.ts), subject to Guardian's privacy constraint
+ * (a hard constraint, never just a score input).
  */
 export function runRouter(
   scout: ScoutResult,
@@ -59,19 +62,33 @@ export function runRouter(
     };
   }
 
-  const provider = candidateProviders[0];
-  const model = provider.defaultModel(scout.taskType);
+  const candidates = candidateProviders.map((provider) => {
+    const model = provider.defaultModel(scout.taskType);
+    const breakdown = scoreProviderModel(
+      provider,
+      model,
+      scout.taskType,
+      thinker.accuracyRequirement,
+      thinker.latencyRequirement,
+      guardian.privacyClass,
+      guardian.redactedText
+    );
+    return { provider, model, breakdown };
+  });
 
-  const capabilityFit = 1 - Math.abs(thinker.reasoningRequirement - scout.estimatedComplexity);
-  const privacyPenalty = guardian.privacyClass === "P2" ? 0.2 : 0;
-  const score = Math.max(0, Math.min(1, capabilityFit - privacyPenalty));
+  const best = candidates.reduce((top, candidate) => (candidate.breakdown.total > top.breakdown.total ? candidate : top));
+
+  const runnerUp = candidates.find((c) => c !== best);
+  const comparison = runnerUp
+    ? ` (beat ${runnerUp.provider.name}/${runnerUp.model} at ${runnerUp.breakdown.total.toFixed(2)})`
+    : "";
 
   return {
     executor: "ai",
     executorName: "ai_model",
-    provider: provider.id,
-    model,
-    score,
-    reason: `Reasoning requirement (${thinker.reasoningRequirement.toFixed(2)}) exceeds deterministic capability; routed to ${provider.name}/${model}.`,
+    provider: best.provider.id,
+    model: best.model,
+    score: best.breakdown.total,
+    reason: `NØVA score ${best.breakdown.total.toFixed(2)} [${formatScoreBreakdown(best.breakdown)}] routed to ${best.provider.name}/${best.model}${comparison}.`,
   };
 }

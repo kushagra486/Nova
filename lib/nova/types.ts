@@ -57,6 +57,8 @@ export interface ProviderHealth {
   online: boolean;
   configured: boolean;
   latencyMs: number | null;
+  /** Rolling success rate from real generate() outcomes; feeds the Router's NØVA score. */
+  reliability: number;
 }
 
 export interface ExecutionResult {
