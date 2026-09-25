@@ -18,5 +18,9 @@
   { "id": "privacy-2", "category": "privacy_sensitive", "task": "Here is my API key sk-abcdefghijklmnopqrstuvwx1234567890, can you debug this integration?" },
   { "id": "privacy-3", "category": "privacy_sensitive", "task": "My contact is jane@acme.com and my phone is 555-123-4567, can you draft a follow-up email?" },
   { "id": "general-1", "category": "general_query", "task": "What's a good strategy for onboarding new engineers to a large codebase?" },
-  { "id": "general-2", "category": "general_query", "task": "Explain the tradeoffs between REST and GraphQL for a public API." }
+  { "id": "general-2", "category": "general_query", "task": "Explain the tradeoffs between REST and GraphQL for a public API." },
+  { "id": "search-1", "category": "web_search", "task": "search for the latest Next.js 16 release notes" },
+  { "id": "search-2", "category": "web_search", "task": "look up the current population of Iceland" },
+  { "id": "coderun-1", "category": "code_execution", "task": "Run this and tell me the output:\n```python\nprint(sum(range(1, 11)))\n```" },
+  { "id": "coderun-2", "category": "code_execution", "task": "Execute this code:\n```javascript\nconsole.log([1,2,3].map(x => x * 2))\n```" }
 ]

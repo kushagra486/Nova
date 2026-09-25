@@ -37,4 +37,25 @@ describe("Router", () => {
     expect(decision.executorName).toBe("unavailable");
     expect(decision.provider).toBeNull();
   });
+
+  it("routes search requests to the specialized web_search executor", () => {
+    const decision = route("search for the latest Next.js 16 release notes");
+    expect(decision.executor).toBe("specialized");
+    // No BRAVE_SEARCH_API_KEY in the test environment, so it reports unavailable
+    // rather than silently falling through to an AI provider.
+    expect(decision.executorName).toBe("unavailable");
+    expect(decision.reason).toMatch(/BRAVE_SEARCH_API_KEY/);
+  });
+
+  it("routes runnable code to the specialized code_sandbox executor", () => {
+    const decision = route("Run this and tell me the output:\n```python\nprint(1 + 1)\n```");
+    expect(decision.executor).toBe("specialized");
+    expect(decision.executorName).toBe("code_sandbox");
+    expect(decision.provider).toBeNull();
+  });
+
+  it("still blocks a code_execution request containing credentials", () => {
+    const decision = route("Run this:\n```python\nprint('sk-abcdefghijklmnopqrstuvwx1234567890')\n```");
+    expect(decision.executor).toBe("blocked");
+  });
 });

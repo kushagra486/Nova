@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-09-24T14:59:21.303Z",
-  "sampleSize": 20,
+  "generatedAt": "2026-09-25T01:05:42.166Z",
+  "sampleSize": 24,
   "hypothesis": "H1: adaptive routing reduces unnecessary AI execution while maintaining task quality (section 43).",
   "notes": "AI call counts reflect what NØVA's Router *decided* to send to a model, not model output quality. Accuracy/quality comparison requires live NVIDIA_API_KEY / DEEPSEEK_API_KEY and is not measured here.",
   "summary": {
-    "totalTasks": 20,
-    "baselineAiCalls": 20,
+    "totalTasks": 24,
+    "baselineAiCalls": 24,
     "novaRoutedToAiCalls": 13,
     "novaAiCallsSucceeded": 0,
-    "aiCallsAvoidedPct": 35,
+    "aiCallsAvoidedPct": 46,
     "deterministicTasks": 5,
     "blockedTasks": 2,
-    "tokensBaselineWouldSpend": 10570,
-    "tokensNovaAvoided": 3680,
-    "tokensSavedPct": 35
+    "tokensBaselineWouldSpend": 12678,
+    "tokensNovaAvoided": 5788,
+    "tokensSavedPct": 46
   },
   "byCategory": {
     "arithmetic": {
@@ -84,6 +84,20 @@
       "deterministic": 0,
       "blocked": 0,
       "routedToAi": 2,
+      "aiCallsSucceeded": 0
+    },
+    "web_search": {
+      "total": 2,
+      "deterministic": 0,
+      "blocked": 0,
+      "routedToAi": 0,
+      "aiCallsSucceeded": 0
+    },
+    "code_execution": {
+      "total": 2,
+      "deterministic": 0,
+      "blocked": 0,
+      "routedToAi": 0,
       "aiCallsSucceeded": 0
     }
   },
@@ -326,6 +340,54 @@
       "aiCallSucceeded": false,
       "baselineAiCallUsed": true,
       "estimatedTokensIfSentToAi": 528,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "search-1",
+      "category": "web_search",
+      "novaExecutor": "specialized",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 524,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "search-2",
+      "category": "web_search",
+      "novaExecutor": "specialized",
+      "novaExecutorName": "unavailable",
+      "novaPrivacyClass": "P0",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 523,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "coderun-1",
+      "category": "code_execution",
+      "novaExecutor": "specialized",
+      "novaExecutorName": "code_sandbox",
+      "novaPrivacyClass": "P0",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 530,
+      "novaTokensUsed": 0
+    },
+    {
+      "id": "coderun-2",
+      "category": "code_execution",
+      "novaExecutor": "specialized",
+      "novaExecutorName": "code_sandbox",
+      "novaPrivacyClass": "P0",
+      "routedToAi": false,
+      "aiCallSucceeded": false,
+      "baselineAiCallUsed": true,
+      "estimatedTokensIfSentToAi": 531,
       "novaTokensUsed": 0
     }
   ]

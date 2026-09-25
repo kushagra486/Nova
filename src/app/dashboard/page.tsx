@@ -23,6 +23,8 @@ interface AggregateMetrics {
 const EXAMPLES = [
   "92837 * 728",
   "Extract all email addresses from: contact jane@acme.com or support@nova.dev",
+  "search for the latest Next.js 16 release notes",
+  "Run this and tell me the output:\n```python\nprint(sum(range(1, 11)))\n```",
   "Analyze these research papers and identify contradictory conclusions.",
   "Analyze this confidential document. My password: hunter2, card 4111 1111 1111 1111",
 ];

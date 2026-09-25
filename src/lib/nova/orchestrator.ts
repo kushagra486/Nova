@@ -5,6 +5,13 @@ import { runThinker } from "./thinker";
 import { runRouter } from "./router";
 import { runVerifier } from "./verifier";
 import { evaluateArithmetic, extractEmails } from "./executors/deterministic";
+import { extractSearchQuery, webSearch, formatWebSearchOutput } from "./executors/web-search";
+import {
+  extractCodeBlock,
+  isLanguageSupported,
+  runCodeSandboxed,
+  formatCodeExecutionOutput,
+} from "./executors/code-sandbox";
 import { getProvider, providers } from "./providers/registry";
 import { recordOutcome } from "./providers/health-tracker";
 import { persistPipelineRun } from "./persistence";
@@ -64,6 +71,35 @@ export async function novaOrchestrator(request: TaskRequest, userId: string | nu
     const emails = extractEmails(request.task);
     output = emails.length > 0 ? emails.join(", ") : "No email addresses found.";
     mark("execution", `regex extractor -> ${emails.length} match(es)`);
+  } else if (routing.executor === "specialized" && routing.executorName === "web_search") {
+    try {
+      const query = extractSearchQuery(guardian.redactedText);
+      const searchResult = await webSearch(query);
+      output = formatWebSearchOutput(searchResult);
+      mark("execution", `web search "${query}" -> ${searchResult.results.length} result(s)`);
+    } catch (err) {
+      output = `Web search failed: ${(err as Error).message}`;
+      success = false;
+    }
+  } else if (routing.executor === "specialized" && routing.executorName === "code_sandbox") {
+    const block = extractCodeBlock(request.task);
+    if (!block) {
+      output = "No code block found to execute.";
+      success = false;
+    } else if (!isLanguageSupported(block.language)) {
+      output = `"${block.language}" isn't supported by the sandbox.`;
+      success = false;
+    } else {
+      try {
+        const result = await runCodeSandboxed(block.language, block.code);
+        output = formatCodeExecutionOutput(result);
+        success = result.exitCode === 0;
+        mark("execution", `sandbox ${block.language} -> exit ${result.exitCode}`);
+      } catch (err) {
+        output = `Sandbox execution failed: ${(err as Error).message}`;
+        success = false;
+      }
+    }
   } else if (routing.executor === "ai" && routing.provider) {
     const provider = getProvider(routing.provider);
     let lastError: Error | null = null;

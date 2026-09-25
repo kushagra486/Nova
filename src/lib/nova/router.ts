@@ -1,6 +1,7 @@
 import type { ScoutResult, ThinkerProfile, GuardianResult, RoutingDecision } from "./types";
 import { providers } from "./providers/registry";
 import { scoreProviderModel, formatScoreBreakdown } from "./scoring";
+import { isWebSearchConfigured } from "./executors/web-search";
 
 /**
  * Router selects the minimum sufficient execution path: deterministic tools
@@ -45,6 +46,38 @@ export function runRouter(
       model: null,
       score: 1,
       reason: "Pattern-based extraction satisfies the task without an LLM.",
+    };
+  }
+
+  if (scout.taskType === "web_search") {
+    if (!isWebSearchConfigured()) {
+      return {
+        executor: "specialized",
+        executorName: "unavailable",
+        provider: null,
+        model: null,
+        score: 0,
+        reason: "Web search requires no LLM, but no search provider is configured (missing BRAVE_SEARCH_API_KEY).",
+      };
+    }
+    return {
+      executor: "specialized",
+      executorName: "web_search",
+      provider: null,
+      model: null,
+      score: 1,
+      reason: "A web search satisfies the task without an LLM call.",
+    };
+  }
+
+  if (scout.taskType === "code_execution") {
+    return {
+      executor: "specialized",
+      executorName: "code_sandbox",
+      provider: null,
+      model: null,
+      score: 1,
+      reason: "Code executed in an isolated sandbox without an LLM call.",
     };
   }
 

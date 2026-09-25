@@ -30,8 +30,8 @@ USER → GATEWAY (auth + Zod validation + rate limit) → SCOUT → GUARDIAN
   highest scorer, or to a deterministic tool when one exists — subject to
   Guardian's hard privacy constraint.
 - **Executor** — runs it: a hand-written arithmetic evaluator, a regex
-  extractor, or a call to NVIDIA NIM / DeepSeek via the OpenAI-compatible
-  `openai` SDK.
+  extractor, a web search, a sandboxed code run, or a call to NVIDIA NIM /
+  DeepSeek via the OpenAI-compatible `openai` SDK.
 - **Verifier** — sanity-checks the output before it's returned. If an AI
   response fails verification, the orchestrator escalates once to a
   stronger model on the same provider before giving up.
@@ -70,11 +70,16 @@ Open [http://localhost:3000](http://localhost:3000). Try:
 - `92837 * 728` → solved deterministically, zero AI calls.
 - `Extract all email addresses from: jane@acme.com, support@nova.dev` →
   regex extractor, zero AI calls.
+- `search for the latest Next.js 16 release notes` → a real web search
+  (Brave Search API), zero AI calls (requires `BRAVE_SEARCH_API_KEY`).
+- ` ```python\nprint(sum(range(1, 11)))\n``` ` with "run this" → executed
+  in a real sandbox (Wandbox), zero AI calls, no key needed.
 - `Analyze these research papers and identify contradictory conclusions.` →
   routed to whichever configured AI provider scores highest (requires an
   API key to actually execute).
 - `My password: hunter2` → blocked by Guardian before any provider is
-  called.
+  called — the same hard block applies to web search and code execution
+  too, not just AI.
 
 ## API
 
@@ -137,7 +142,10 @@ src/lib/nova/
   persistence.ts            writes each run to Supabase (best-effort)
   schema.ts                 Zod request schema
   rate-limit.ts              in-memory gateway rate limiter
-  executors/                deterministic (Level 0) execution
+  executors/                deterministic (Level 0) execution — calculator,
+                              regex — plus specialized (Level 2) tools —
+                              web search (Brave), code sandbox (Wandbox) —
+                              all zero-AI
   providers/                 provider-agnostic AI interface, NVIDIA/DeepSeek
                               adapters (openai SDK), and the health tracker
                               that feeds Router reliability scores
@@ -149,7 +157,7 @@ src/proxy.ts             session refresh + auth-gates /dashboard
 supabase/migrations/    Postgres schema
 supabase/seed.sql        seeds the providers/models reference tables
 benchmarks/             adaptive-routing vs. always-AI baseline comparison
-tests/                  Vitest unit tests (Scout, Guardian, Router)
+tests/                  Vitest unit tests (Scout, Guardian, Router, executors)
 ```
 
 ## Notes on provider claims
