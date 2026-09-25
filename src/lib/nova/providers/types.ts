@@ -17,6 +17,8 @@ export interface AIResponse {
   tokensInput: number;
   tokensOutput: number;
   latencyMs: number;
+  /** Chain-of-thought/thinking trace, for models that expose one (see AIProvider docs). */
+  reasoningText?: string;
 }
 
 export interface UsageEstimate {

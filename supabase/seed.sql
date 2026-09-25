@@ -14,10 +14,10 @@ from public.providers p
 join (
   values
     ('nvidia', 'deepseek-ai/deepseek-v4.1-flash', 'reasoning', 1000000, '{"toolCalling": true}'),
-    ('nvidia', 'zai-org/glm-5-3', 'reasoning', 128000, '{"toolCalling": true}'),
-    ('nvidia', 'zai-org/glm-5-3-flash', 'multimodal', 128000, '{"toolCalling": true}'),
-    ('nvidia', 'nvidia/nemotron-3.5-lightning', 'lightweight', 32000, '{"toolCalling": false}'),
-    ('nvidia', 'nvidia/nemotron-3-ultra', 'reasoning', 128000, '{"toolCalling": true}'),
+    ('nvidia', 'z-ai/glm-5.3', 'reasoning', 128000, '{"toolCalling": true}'),
+    ('nvidia', 'z-ai/glm-5.3-flash', 'multimodal', 128000, '{"toolCalling": true}'),
+    ('nvidia', 'nvidia/nemotron-3.5-lightning-30b-a3b', 'lightweight', 32000, '{"toolCalling": false}'),
+    ('nvidia', 'nvidia/nemotron-3-ultra-550b-a55b', 'reasoning', 128000, '{"toolCalling": true}'),
     ('deepseek', 'deepseek-flash', 'reasoning', 1000000, '{"toolCalling": true}')
 ) as m(provider_name, name, model_type, context_window, capabilities)
 on p.name = m.provider_name
