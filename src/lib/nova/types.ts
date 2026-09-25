@@ -4,13 +4,19 @@ export type ExecutorKind =
   | "deterministic"
   | "specialized"
   | "ai"
-  | "blocked";
+  | "blocked"
+  | "needs_approval";
 
 export interface TaskRequest {
   task: string;
   privacy?: "low" | "medium" | "high";
   accuracy?: number;
   latency?: "low" | "medium" | "high";
+  /** Explicit user consent to send privacy-sensitive content externally anyway (see Guardian). */
+  overridePrivacy?: boolean;
+  /** Base64-encoded PDF, if this task attaches a document. */
+  fileBase64?: string;
+  fileName?: string;
 }
 
 export interface ScoutResult {
@@ -99,4 +105,8 @@ export interface NovaResponse {
   tokensUsed: number;
   latencyMs: number;
   trace: TraceStep[];
+  /** True when selectedExecutor === "needs_approval": resubmit with overridePrivacy: true to proceed. */
+  requiresApproval: boolean;
+  /** PII/secret categories Guardian detected (types only — never the raw matched values). */
+  findings: string[];
 }
