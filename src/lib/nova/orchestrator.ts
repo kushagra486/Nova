@@ -117,6 +117,9 @@ export async function novaOrchestrator(request: TaskRequest, userId: string | nu
         usedModel = model;
         recordOutcome(candidate.id, true);
         mark("execution", `${candidate.name}/${model} -> ${tokensOutput} tokens generated`);
+        if (response.reasoningText) {
+          mark("reasoning", response.reasoningText.slice(0, 300) + (response.reasoningText.length > 300 ? "…" : ""));
+        }
         lastError = null;
         break;
       } catch (err) {
@@ -152,6 +155,9 @@ export async function novaOrchestrator(request: TaskRequest, userId: string | nu
           "escalation",
           `${provider.name}/${strongerModel} -> passed=${escalatedVerification.passed} confidence=${escalatedVerification.confidence}`
         );
+        if (response.reasoningText) {
+          mark("reasoning", response.reasoningText.slice(0, 300) + (response.reasoningText.length > 300 ? "…" : ""));
+        }
 
         output = response.text;
         tokensInput += response.tokensInput;
