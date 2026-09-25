@@ -4,11 +4,11 @@ import { runScout } from "@/lib/nova/scout";
 import { runGuardian, privacyClassToScore } from "@/lib/nova/guardian";
 import { runThinker } from "@/lib/nova/thinker";
 
-function route(task: string) {
+function route(task: string, overridePrivacy = false) {
   const scout = runScout(task);
   const guardian = runGuardian(task);
   const thinker = runThinker(scout, privacyClassToScore(guardian.privacyClass), { task });
-  return runRouter(scout, guardian, thinker);
+  return runRouter(scout, guardian, thinker, overridePrivacy);
 }
 
 describe("Router", () => {
@@ -57,5 +57,26 @@ describe("Router", () => {
   it("still blocks a code_execution request containing credentials", () => {
     const decision = route("Run this:\n```python\nprint('sk-abcdefghijklmnopqrstuvwx1234567890')\n```");
     expect(decision.executor).toBe("blocked");
+  });
+
+  it("requires approval instead of silently routing P1 data to an AI provider", () => {
+    const decision = route("Please write a nice birthday message for jane@acme.com");
+    expect(decision.executor).toBe("needs_approval");
+    expect(decision.provider).toBeNull();
+  });
+
+  it("requires approval instead of silently routing P2 data to an AI provider", () => {
+    const decision = route("Is this card number valid? 4111 1111 1111 1111");
+    expect(decision.executor).toBe("needs_approval");
+  });
+
+  it("proceeds past the P1 approval gate once explicitly overridden", () => {
+    const decision = route("Please write a nice birthday message for jane@acme.com", true);
+    expect(decision.executor).not.toBe("needs_approval");
+  });
+
+  it("proceeds past the P3 hard block once explicitly overridden", () => {
+    const decision = route("My password: hunter2, please help me log in.", true);
+    expect(decision.executor).not.toBe("blocked");
   });
 });

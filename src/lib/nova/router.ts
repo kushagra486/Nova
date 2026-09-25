@@ -13,9 +13,10 @@ import { isWebSearchConfigured } from "./executors/web-search";
 export function runRouter(
   scout: ScoutResult,
   guardian: GuardianResult,
-  thinker: ThinkerProfile
+  thinker: ThinkerProfile,
+  overridePrivacy: boolean = false
 ): RoutingDecision {
-  if (!guardian.externalTransmissionAllowed) {
+  if (!guardian.externalTransmissionAllowed && !overridePrivacy) {
     return {
       executor: "blocked",
       executorName: "guardian_block",
@@ -23,7 +24,7 @@ export function runRouter(
       model: null,
       score: 1,
       reason:
-        "Privacy class P3 (credentials/API keys) detected — external AI transmission is blocked by default policy.",
+        "Privacy class P3 (credentials/API keys) detected — external AI transmission is blocked by default policy. Resubmit with explicit approval to send it anyway.",
     };
   }
 
@@ -78,6 +79,17 @@ export function runRouter(
       model: null,
       score: 1,
       reason: "Code executed in an isolated sandbox without an LLM call.",
+    };
+  }
+
+  if (guardian.privacyClass !== "P0" && !overridePrivacy) {
+    return {
+      executor: "needs_approval",
+      executorName: "privacy_confirmation",
+      provider: null,
+      model: null,
+      score: 0,
+      reason: `This request is classified ${guardian.privacyClass} and would send content to an external AI provider. Resubmit with explicit approval to proceed anyway.`,
     };
   }
 

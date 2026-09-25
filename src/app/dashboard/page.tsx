@@ -5,10 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { User } from "@supabase/supabase-js";
+import { BookOpen } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { GlassPanel } from "@/components/glass-panel";
 import { Reveal } from "@/components/motion/reveal";
+import { PipelineFlow } from "@/components/pipeline-flow";
+import { PdfAttachment, type AttachedFile } from "@/components/pdf-attachment";
+import { ApprovalDialog } from "@/components/approval-dialog";
+import { ChatHistory, useHistory, type HistoryEntry } from "@/components/chat-history";
 import type { NovaResponse } from "@/lib/nova/types";
 
 interface AggregateMetrics {
@@ -52,6 +57,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<NovaResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [file, setFile] = useState<AttachedFile | null>(null);
+  const [approvalPending, setApprovalPending] = useState<NovaResponse | null>(null);
+  const [approving, setApproving] = useState(false);
   const [stats, setStats] = useState<SessionStats>({
     totalTasks: 0,
     aiCalls: 0,
@@ -60,6 +68,7 @@ export default function DashboardPage() {
   });
   const [aggregate, setAggregate] = useState<AggregateMetrics | null>(null);
   const [aggregateVersion, setAggregateVersion] = useState(0);
+  const { entries: history, addEntry, clear: clearHistory } = useHistory();
 
   useEffect(() => {
     const supabase = createClient();
@@ -92,33 +101,73 @@ export default function DashboardPage() {
     };
   }, [aggregateVersion]);
 
+  async function submitTask(overridePrivacy: boolean) {
+    const body: Record<string, unknown> = { task, overridePrivacy };
+    if (file) {
+      body.fileBase64 = file.base64;
+      body.fileName = file.name;
+    }
+    const res = await fetch("/api/task", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const responseBody = await res.json().catch(() => ({}));
+      throw new Error(responseBody.error ?? `Request failed (${res.status})`);
+    }
+    return (await res.json()) as NovaResponse;
+  }
+
   async function execute() {
-    if (!task.trim() || loading) return;
+    if ((!task.trim() && !file) || loading) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/task", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ task }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? `Request failed (${res.status})`);
+      const data = await submitTask(false);
+      if (data.requiresApproval) {
+        setApprovalPending(data);
+        return;
       }
-      const data: NovaResponse = await res.json();
-      setResult(data);
-      setStats((s) => ({
-        totalTasks: s.totalTasks + 1,
-        aiCalls: s.aiCalls + data.aiCallsUsed,
-        deterministicTasks: s.deterministicTasks + (data.selectedExecutor === "deterministic" ? 1 : 0),
-        tokensUsed: s.tokensUsed + data.tokensUsed,
-      }));
-      if (data.taskId) setAggregateVersion((v) => v + 1);
+      applyResult(data);
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  function applyResult(data: NovaResponse) {
+    setResult(data);
+    setStats((s) => ({
+      totalTasks: s.totalTasks + 1,
+      aiCalls: s.aiCalls + data.aiCallsUsed,
+      deterministicTasks: s.deterministicTasks + (data.selectedExecutor === "deterministic" ? 1 : 0),
+      tokensUsed: s.tokensUsed + data.tokensUsed,
+    }));
+    if (data.taskId) setAggregateVersion((v) => v + 1);
+    addEntry({
+      id: crypto.randomUUID(),
+      prompt: task.trim() || (file ? `[${file.name}]` : ""),
+      output: data.output,
+      taskType: data.taskType,
+      privacyClass: data.privacyClass,
+      executor: `${data.selectedExecutor}/${data.executorName}`,
+      timestamp: Date.now(),
+    });
+  }
+
+  async function approveAndSend() {
+    setApproving(true);
+    try {
+      const data = await submitTask(true);
+      applyResult(data);
+      setApprovalPending(null);
+    } catch (err) {
+      setError((err as Error).message);
+      setApprovalPending(null);
+    } finally {
+      setApproving(false);
     }
   }
 
@@ -136,6 +185,13 @@ export default function DashboardPage() {
             <p className="text-xs text-zinc-500">Autonomous AI Optimization Agent — Think Less. Do More.</p>
           </div>
           <div className="flex items-center gap-4">
+            <Link
+              href="/guide"
+              className="flex items-center gap-1 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              Guide
+            </Link>
             <Link href="/executions" className="text-xs text-zinc-500 transition-colors hover:text-zinc-300">
               Executions
             </Link>
@@ -162,6 +218,12 @@ export default function DashboardPage() {
         </header>
       </Reveal>
 
+      <Reveal delay={0.02}>
+        <GlassPanel className="py-3">
+          <PipelineFlow trace={result?.trace ?? null} active={loading} />
+        </GlassPanel>
+      </Reveal>
+
       <Reveal delay={0.05}>
         <GlassPanel>
           <label htmlFor={taskId} className="text-sm text-zinc-400">
@@ -175,10 +237,11 @@ export default function DashboardPage() {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) execute();
             }}
             rows={3}
-            placeholder="e.g. 92837 * 728, or: analyze this confidential financial document..."
+            placeholder="e.g. 92837 * 728, analyze this confidential financial document, or attach a PDF below..."
             className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm outline-none transition-colors focus:border-emerald-500/50"
           />
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <PdfAttachment file={file} onChange={setFile} onError={setError} />
             {EXAMPLES.map((ex) => (
               <button
                 key={ex}
@@ -191,12 +254,26 @@ export default function DashboardPage() {
           </div>
           <motion.button
             onClick={execute}
-            disabled={loading || !task.trim()}
+            disabled={loading || (!task.trim() && !file)}
             whileTap={reducedMotion ? undefined : { scale: 0.98 }}
             className="mt-4 w-full cursor-pointer rounded-xl bg-emerald-500 py-2 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {loading ? "EXECUTING…" : "EXECUTE"}
           </motion.button>
+        </GlassPanel>
+      </Reveal>
+
+      <Reveal delay={0.07}>
+        <GlassPanel>
+          <h2 className="mb-3 text-xs uppercase tracking-widest text-zinc-500">Chat History</h2>
+          <ChatHistory
+            entries={history}
+            onSelect={(entry: HistoryEntry) => {
+              setTask(entry.prompt);
+              setError(null);
+            }}
+            onClear={clearHistory}
+          />
         </GlassPanel>
       </Reveal>
 
@@ -324,6 +401,17 @@ export default function DashboardPage() {
             </dl>
           </GlassPanel>
         </Reveal>
+      )}
+
+      {approvalPending && (
+        <ApprovalDialog
+          open={Boolean(approvalPending)}
+          privacyClass={approvalPending.privacyClass}
+          findings={approvalPending.findings}
+          onCancel={() => setApprovalPending(null)}
+          onApprove={approveAndSend}
+          loading={approving}
+        />
       )}
     </main>
   );
