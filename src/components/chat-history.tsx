@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useSyncExternalStore } from "react";
 import { History, Trash2 } from "lucide-react";
 import type { PrivacyClass } from "@/lib/nova/types";
 
@@ -23,40 +23,70 @@ const MAX_ENTRIES = 50;
  * server-side (only a hash, for privacy — see supabase/migrations); this
  * keeps that guarantee intact while still giving you a real history on this
  * device. Clearing your browser storage clears it too.
+ *
+ * Backed by useSyncExternalStore rather than a plain useState+useEffect: the
+ * server always has an empty history (there's no localStorage to read), so
+ * the store must hand back that same empty snapshot during hydration and
+ * only swap in the real, possibly non-empty, value afterward — otherwise a
+ * returning visitor with saved entries gets a hydration mismatch.
  */
-function readStoredEntries(): HistoryEntry[] {
-  if (typeof window === "undefined") return [];
+const listeners = new Set<() => void>();
+
+function emitChange() {
+  for (const listener of listeners) listener();
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  window.addEventListener("storage", listener);
+  return () => {
+    listeners.delete(listener);
+    window.removeEventListener("storage", listener);
+  };
+}
+
+function getSnapshot(): string {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as HistoryEntry[]) : [];
+    return localStorage.getItem(STORAGE_KEY) ?? "[]";
   } catch {
     // Private browsing or storage disabled — history just won't persist.
+    return "[]";
+  }
+}
+
+function getServerSnapshot(): string {
+  return "[]";
+}
+
+function parseEntries(raw: string): HistoryEntry[] {
+  try {
+    return JSON.parse(raw) as HistoryEntry[];
+  } catch {
     return [];
   }
 }
 
 export function useHistory() {
-  const [entries, setEntries] = useState<HistoryEntry[]>(readStoredEntries);
+  const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const entries = parseEntries(raw);
 
   function addEntry(entry: HistoryEntry) {
-    setEntries((prev) => {
-      const next = [entry, ...prev].slice(0, MAX_ENTRIES);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // Best-effort; the app works fine without persisted history.
-      }
-      return next;
-    });
+    const next = [entry, ...entries].slice(0, MAX_ENTRIES);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Best-effort; the app works fine without persisted history.
+    }
+    emitChange();
   }
 
   function clear() {
-    setEntries([]);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
       // Nothing to do — there was nothing persisted anyway.
     }
+    emitChange();
   }
 
   return { entries, addEntry, clear };
