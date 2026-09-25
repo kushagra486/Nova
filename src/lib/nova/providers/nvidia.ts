@@ -5,10 +5,10 @@ const NVIDIA_BASE_URL = process.env.NVIDIA_API_BASE_URL ?? "https://integrate.ap
 
 const MODELS: ModelInfo[] = [
   { name: "deepseek-ai/deepseek-v4.1-flash", type: "reasoning", contextWindow: 1_000_000, toolCalling: true },
-  { name: "zai-org/glm-5-3", type: "reasoning", contextWindow: 128_000, toolCalling: true },
-  { name: "zai-org/glm-5-3-flash", type: "multimodal", contextWindow: 128_000, toolCalling: true },
-  { name: "nvidia/nemotron-3.5-lightning", type: "lightweight", contextWindow: 32_000, toolCalling: false },
-  { name: "nvidia/nemotron-3-ultra", type: "reasoning", contextWindow: 128_000, toolCalling: true },
+  { name: "z-ai/glm-5.3", type: "reasoning", contextWindow: 128_000, toolCalling: true },
+  { name: "z-ai/glm-5.3-flash", type: "multimodal", contextWindow: 128_000, toolCalling: true },
+  { name: "nvidia/nemotron-3.5-lightning-30b-a3b", type: "lightweight", contextWindow: 32_000, toolCalling: false },
+  { name: "nvidia/nemotron-3-ultra-550b-a55b", type: "reasoning", contextWindow: 128_000, toolCalling: true },
 ];
 
 let cachedClient: OpenAI | null = null;
@@ -45,13 +45,13 @@ export const nvidiaProvider: AIProvider = {
 
   defaultModel(taskType: string) {
     if (taskType === "coding" || taskType === "reasoning") return "deepseek-ai/deepseek-v4.1-flash";
-    if (taskType === "classification") return "nvidia/nemotron-3.5-lightning";
-    return "zai-org/glm-5-3-flash";
+    if (taskType === "classification") return "nvidia/nemotron-3.5-lightning-30b-a3b";
+    return "z-ai/glm-5.3-flash";
   },
 
   escalatedModel(taskType: string) {
-    if (taskType === "coding" || taskType === "reasoning") return "nvidia/nemotron-3-ultra";
-    return "zai-org/glm-5-3";
+    if (taskType === "coding" || taskType === "reasoning") return "nvidia/nemotron-3-ultra-550b-a55b";
+    return "z-ai/glm-5.3";
   },
 
   async healthCheck() {
