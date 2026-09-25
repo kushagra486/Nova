@@ -30,8 +30,8 @@ USER → GATEWAY (auth + Zod validation + rate limit) → SCOUT → GUARDIAN
   highest scorer, or to a deterministic tool when one exists — subject to
   Guardian's hard privacy constraint.
 - **Executor** — runs it: a hand-written arithmetic evaluator, a regex
-  extractor, a web search, a sandboxed code run, or a call to NVIDIA NIM /
-  DeepSeek via the OpenAI-compatible `openai` SDK.
+  extractor, a web search, a sandboxed code run, or a call to NVIDIA NIM
+  via the OpenAI-compatible `openai` SDK.
 - **Verifier** — sanity-checks the output before it's returned. If an AI
   response fails verification, the orchestrator escalates once to a
   stronger model on the same provider before giving up.
@@ -45,8 +45,9 @@ chosen.
 - Supabase Auth (`@supabase/ssr`) — sign up/in/out, session-protected `/dashboard`
 - Zod — request validation at the gateway
 - Provider-independent AI abstraction (`src/lib/nova/providers`), on the
-  `openai` SDK — NVIDIA NIM as primary, DeepSeek as fallback, fully
-  interchangeable behind one `AIProvider` interface
+  `openai` SDK — NVIDIA NIM (free, no funded account required), behind
+  one `AIProvider` interface so another provider can be added later
+  without touching the Router or orchestrator
 - Supabase/Postgres + pgvector schema (`supabase/migrations`) for tasks,
   providers/models, routing decisions, executions, verification results,
   privacy events and memories — with RLS scoped to `auth.uid()`
@@ -63,7 +64,7 @@ npm run dev
 Auth and persistence are both optional in local dev — without Supabase
 configured, `/dashboard` stays open and the pipeline just skips writing
 history (every API route degrades gracefully rather than erroring). Add
-`NVIDIA_API_KEY` / `DEEPSEEK_API_KEY` to actually execute AI-routed tasks.
+`NVIDIA_API_KEY` to actually execute AI-routed tasks.
 
 Open [http://localhost:3000](http://localhost:3000). Try:
 
@@ -146,8 +147,8 @@ src/lib/nova/
                               regex — plus specialized (Level 2) tools —
                               web search (Brave), code sandbox (Wandbox) —
                               all zero-AI
-  providers/                 provider-agnostic AI interface, NVIDIA/DeepSeek
-                              adapters (openai SDK), and the health tracker
+  providers/                 provider-agnostic AI interface, the NVIDIA
+                              adapter (openai SDK), and the health tracker
                               that feeds Router reliability scores
 src/lib/supabase/
   client.ts                browser client (publishable key)
@@ -162,7 +163,7 @@ tests/                  Vitest unit tests (Scout, Guardian, Router, executors)
 
 ## Notes on provider claims
 
-NVIDIA's model catalog and DeepSeek's direct API terms can change; this
+NVIDIA's model catalog and free-tier terms can change; this
 project does not assume permanently free or unlimited inference. NØVA's
 value is in avoiding unnecessary AI calls in the first place — see the
 "Computation Efficiency" panel on the dashboard for this session's actual
