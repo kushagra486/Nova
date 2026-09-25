@@ -148,7 +148,9 @@ export default function DashboardPage() {
             </span>
             {user ? (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-500">{user.email}</span>
+                <span className="text-xs text-zinc-500">
+                  {user.is_anonymous ? "Anonymous session" : user.email}
+                </span>
                 <Button size="sm" variant="outline" onClick={signOut}>
                   Sign out
                 </Button>
