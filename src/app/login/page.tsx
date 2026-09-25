@@ -25,10 +25,33 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [anonLoading, setAnonLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const emailId = useId();
   const passwordId = useId();
+
+  async function continueAnonymously() {
+    setAnonLoading(true);
+    setError(null);
+    setMessage(null);
+
+    const supabase = createClient();
+    if (!supabase) {
+      setError("Supabase Auth is not configured in this deployment.");
+      setAnonLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      setError(error.message);
+      setAnonLoading(false);
+      return;
+    }
+    router.push(redirectTo);
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -121,6 +144,25 @@ function LoginForm() {
                 {mode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in"}
               </button>
             </form>
+
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600">or</span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              disabled={anonLoading}
+              onClick={continueAnonymously}
+              className="mt-4 w-full"
+            >
+              {anonLoading ? "Working…" : "Continue anonymously"}
+            </Button>
+            <p className="mt-2 text-center text-[11px] text-zinc-600">
+              No email, no confirmation — jumps straight into the dashboard with a temporary account.
+            </p>
           </CardContent>
         </Card>
       </Reveal>
